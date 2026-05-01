@@ -1,113 +1,210 @@
-#include <iostream>
-#include <string>
+#include<iostream>
+#include<conio.h>
+#include<string>
+#include<cctype>
 using namespace std;
-string suggest(string password)
+
+string checkstrength(string p)
 {
-    string newPass=password;
+    int sc = 0;
 
-    newPass = "A" + newPass;
-    newPass = newPass +"1";
-    newPass = newPass +"@";
-
-    while (newPass.length()<8)
+    if(p.length() >= 8)
     {
-        newPass = newPass+"x";
+        sc++;
     }
 
-    return newPass;
-}
-void check(string password)
-{
-    int length=password.length();
-
-    bool upper=false;
-    bool lower=false;
-    bool digit=false;
-    bool special=false;
-
-    for(int i=0;i<length;i++)
+    for(int i = 0; i < p.length(); i++)
     {
-        if(password[i]>='A'&& password[i]<='Z')
-            upper=true;
-        else if(password[i]>='a'&& password[i]<='z')
-            lower=true;
-        else if(password[i]>='0'&&password[i]<='9')
-            digit=true;
-        else
-            special=true;
-    }
-
-    cout << endl;
-    cout << "******** Password Analysis ********" << endl;
-
-    bool weak=false;
-    if (length<6)
-    {
-        cout<<"Weak Password"<<endl;
-        weak=true;
-    }
-    else if(length>= 6 && length<=10)
-    {
-        if (upper && lower && digit)
-            cout<<"Medium Password"<<endl;
-        else
+        if(isupper(p[i]))
         {
-            cout<<"Weak Password"<<endl;
-            weak=true;
+            sc++;
+            break;
         }
+    }
+
+    for(int i = 0; i < p.length(); i++)
+    {
+        if(islower(p[i]))
+        {
+            sc++;
+            break;
+        }
+    }
+
+    for(int i = 0; i < p.length(); i++)
+    {
+        if(isdigit(p[i]))
+        {
+            sc++;
+            break;
+        }
+    }
+
+    for(int i = 0; i < p.length(); i++)
+    {
+        if(!isalnum(p[i]))
+        {
+            sc++;
+            break;
+        }
+    }
+
+    if(sc <= 2)
+    {
+        return "weak";
+    }
+    else if(sc <= 4)
+    {
+        return "medium";
     }
     else
     {
-        if (upper && lower && digit && special)
-            cout<<"Strong Password"<<endl;
-        else
-            cout<<"Medium Password"<<endl;
+        return "strong";
     }
-    cout<<endl;
-    cout<<"Suggestions:"<<endl;
+}
 
-    if(!upper)
-        cout<<"Add uppercase letter"<<endl;
+string getpassword()
+{
+    string p = "";
+    char ch;
 
-    if (!lower)
-        cout<<"Add lowercase letter"<<endl;
+    cout << "enter password: ";
 
-    if (!digit)
-        cout<<"Add digit"<<endl;
-
-    if (!special)
-        cout<<"Add special character"<<endl;
-
-    if(length<8)
-        cout <<"Increase password length"<<endl;
-
-    if(weak)
+    while(true)
     {
-        string strongPass=suggest(password);
-        cout<<"Suggested Strong Password: "<<strongPass<<endl;
+        ch = getch();
+
+        if(ch == 13)
+        {
+            break;
+        }
+        else if(ch == 8)
+        {
+            if(!p.empty())
+            {
+                p.pop_back();
+            }
+        }
+        else
+        {
+            if(ch != ' ')
+            {
+                p += ch;
+            }
+        }
+
+        cout << "\r";
+        for(int i = 0; i < 80; i++)
+        {
+            cout << " ";
+        }
+
+        cout << "\renter password: ";
+
+        for(int i = 0; i < p.length(); i++)
+        {
+            cout << "*";
+        }
+
+        string s = checkstrength(p);
+        cout << "  [" << s << "]";
     }
 
-    cout << "**************************************************" << endl;
+    cout << endl;
+    return p;
+}
+
+void givesuggestions(string p)
+{
+    bool u=false, l=false, d=false, s=false;
+
+    for(int i=0;i<p.length();i++)
+    {
+        if(isupper(p[i])) u=true;
+        else if(islower(p[i])) l=true;
+        else if(isdigit(p[i])) d=true;
+        else s=true;
+    }
+
+    cout << "suggestions:" << endl;
+
+    if(p.length() < 8)
+        cout << "- use at least 8 characters" << endl;
+
+    if(!u)
+        cout << "- add uppercase letters" << endl;
+
+    if(!l)
+        cout << "- add lowercase letters" << endl;
+
+    if(!d)
+        cout << "- include numbers" << endl;
+
+    if(!s)
+        cout << "- use special characters" << endl;
 }
 
 int main()
 {
-    string password;
-    char choice;
+    int a = 3;
 
-    do
+    while(a > 0)
     {
         cout << endl;
-        cout<<"=*=*Password Strength Checker *=*="<<endl;
-        cout<<"Enter your password:";
-        cin>>password;
-        check(password);
-        cout << endl;
-        cout<<"Check another password?(y/n):"<<endl;
-        cin >> choice;
+        cout << "attempts left: " << a << endl;
 
-    } while (choice=='y' || choice== 'Y');
-    cout << "Thank you!" << endl;
+        string p1 = getpassword();
+        string p2 = getpassword();
+
+        if(p1 != p2)
+        {
+            cout << "not match" << endl;
+            a--;
+            continue;
+        }
+
+        string s = checkstrength(p1);
+        cout << "strength: " << s << endl;
+
+        if(s == "weak")
+        {
+            cout << "too weak" << endl;
+            givesuggestions(p1);
+            a--;
+            continue;
+        }
+
+        if(s == "medium")
+        {
+            givesuggestions(p1);
+
+            char c;
+            cout << "retry? (y/n): ";
+            cin >> c;
+
+            if(c == 'y' || c == 'Y')
+            {
+                a--;
+                continue;
+            }
+            else
+            {
+                cout << "accepted" << endl;
+                break;
+            }
+        }
+
+        if(s == "strong")
+        {
+            cout << "accepted" << endl;
+            break;
+        }
+    }
+
+    if(a == 0)
+    {
+        cout << "too many attempts" << endl;
+    }
 
     return 0;
 }
